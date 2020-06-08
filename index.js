@@ -1,9 +1,5 @@
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.ExpressWidget = ExpressWidget;
 function ExpressWidget(params) {
   var _this = this;
 

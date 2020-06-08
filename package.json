@@ -1,0 +1,19 @@
+{
+  "name": "@expressms/express-widget",
+  "version": "1.0.3",
+  "description": "Виджет для подключения eXpress messenger",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ExpressApp/express-widget.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ExpressApp/express-widget/issues"
+  },
+  "homepage": "https://github.com/ExpressApp/express-widget#readme"
+}

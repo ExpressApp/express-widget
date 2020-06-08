@@ -12,10 +12,10 @@
 или установите с помощью npm 
 
 ```
-npm install express-widget
+npm i @expressms/express-widget
 
-import { ExpressWidget } from 'express-widget'
-import 'express-widget/style.css'
+import { ExpressWidget } from '@expressms/express-widget'
+import '@expressms/express-widget/style.css'
 ```
 
 ## Использование
@@ -25,7 +25,6 @@ import 'express-widget/style.css'
     new ExpressWidget({
         elementId: 'express-button',
         url: 'https://corp.express',
-        chatId: '1e87f03b-cdd0-43b0-a18c-d23c1544ce38'
     })
 </script>
 ```
