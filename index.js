@@ -5,6 +5,8 @@ function ExpressWidget(params) {
 
   var _ref = params || {};
 
+  var containerId = _ref.containerId;
+  var buttonStatus = _ref.buttonStatus;
   var elementId = _ref.elementId;
   var url = _ref.url;
   var chatId = _ref.chatId;
@@ -15,6 +17,7 @@ function ExpressWidget(params) {
     UNREAD_CHATS_COUNTER: 'unreadChatsCounter',
     APP_LOADED: 'appLoaded',
     OPEN_CHAT: 'openChat',
+    OPEN_CHAT_BY_USERNAME: 'openChatByUserName',
     VERSION: 'version',
     LOGOUT: 'logout',
     LOGIN: 'login'
@@ -40,16 +43,21 @@ function ExpressWidget(params) {
     var buttonId = 'express-button-' + Math.random();
     var iframeId = 'express-iframe-' + Math.random();
     var badgeId = 'express-bagde-' + Math.random();
-
-    document.body.insertAdjacentHTML('beforeend', '\n      <iframe\n          src="' + url + '/#/rpc?origin=' + encodeURIComponent(window.location.origin) + '"\n          style="width: 1px; height: 1px; visibility: hidden;"\n          class="express-iframe express-button-full"\n    sandbox="allow-downloads allow-forms allow-modals allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts allow-top-navigation-by-user-activation"\n      id="' + iframeId + '"\n      ></iframe>\n    ');
-
-    _this.containerElement.innerHTML = '\n      <button class="express-button" id="' + buttonId + '">\n          <svg width="35" height="35" viewBox="-1 -1 16 16" fill="#FFF"><g fill="none" fill-rule="evenodd"><path fill="#FFF" d="M12.7 1H2.3c-.715 0-1.293.585-1.293 1.3L1 14l2.6-2.6h9.1c.715 0 1.3-.585 1.3-1.3V2.3c0-.715-.585-1.3-1.3-1.3zM3.6 5.55h7.8v1.3H3.6v-1.3zM8.8 8.8H3.6V7.5h5.2v1.3zm2.6-3.9H3.6V3.6h7.8v1.3z"></path></g></svg>\n          <span id=' + badgeId + ' class="express-button__badge" style="display:none"></span>\n      </button>\n    ';
+    var containerIdElement = document.getElementById(containerId);
+    if (containerId && containerIdElement) {
+      containerIdElement.insertAdjacentHTML('beforeend',  '<iframe src="' + url + '/#/rpc?origin=' + encodeURIComponent(window.location.origin) + '" class="express-button-full express-iframe-full" sandbox="allow-downloads allow-forms allow-modals allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts allow-top-navigation-by-user-activation" id="' + iframeId + '"></iframe>');
+    } else {
+      document.body.insertAdjacentHTML('beforeend', '<iframe src="' + url + '/#/rpc?origin=' + encodeURIComponent(window.location.origin) + '" style="width: 1px; height: 1px; visibility: hidden;" class="express-iframe express-button-full" sandbox="allow-downloads allow-forms allow-modals allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts allow-top-navigation-by-user-activation" id="' + iframeId + '"></iframe>');
+      _this.containerElement.innerHTML = '<button class="express-button" id="' + buttonId + '"><svg width="35" height="35" viewBox="-1 -1 16 16" fill="#FFF"><g fill="none" fill-rule="evenodd"><path fill="#FFF" d="M12.7 1H2.3c-.715 0-1.293.585-1.293 1.3L1 14l2.6-2.6h9.1c.715 0 1.3-.585 1.3-1.3V2.3c0-.715-.585-1.3-1.3-1.3zM3.6 5.55h7.8v1.3H3.6v-1.3zM8.8 8.8H3.6V7.5h5.2v1.3zm2.6-3.9H3.6V3.6h7.8v1.3z"></path></g></svg><span id=' + badgeId + ' class="express-button__badge" style="display:none"></span></button>';
+    }
 
     _this.iframeElement = document.getElementById(iframeId);
     _this.badgeElement = document.getElementById(badgeId);
     _this.buttonElement = document.getElementById(buttonId);
 
-    _this.buttonElement.addEventListener('click', _this.handleToggle);
+    if (_this.buttonElement) {
+      _this.buttonElement.addEventListener('click', _this.handleToggle);
+    }
     window.addEventListener('message', function (event) {
       return _this.handleRpcCommand(event.data);
     });
@@ -61,12 +69,16 @@ function ExpressWidget(params) {
 
     switch (type) {
       case _this.RPC_COMMAND.UNREAD_CHATS_COUNTER:
-        _this.handleUnreadCounter(payload.counter);
+        if (_this.buttonElement) {
+          _this.handleUnreadCounter(payload.counter);
+        }
         break;
       case _this.RPC_COMMAND.APP_LOADED:
         if (!_this.isUser && payload) {
           _this.isUser = true;
-          _this.buttonElement.style = 'background-color: #4799e3;';
+          if (_this.buttonElement && buttonStatus) {
+            _this.buttonElement.style = 'background-color: #4799e3;';
+          }
         }
         if (full) _this.sendRpcCommand({ type: _this.RPC_COMMAND.VERSION, payload: { embeddedType: 'full' } });
         if (chatId) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT, payload: { chatId: chatId } });
@@ -74,20 +86,29 @@ function ExpressWidget(params) {
       case _this.RPC_COMMAND.LOGIN:
         if (!_this.isUser) {
           _this.isUser = true;
-          _this.buttonElement.style = 'background-color: #4799e3;';
+          if (_this.buttonElement && buttonStatus) {
+            _this.buttonElement.style = 'background-color: #4799e3;';
+          }
         }
         if (full) _this.sendRpcCommand({ type: _this.RPC_COMMAND.VERSION, payload: { embeddedType: 'full' } });
         break;
       case _this.RPC_COMMAND.LOGOUT:
         if (_this.isUser) {
           _this.isUser = false;
-          _this.buttonElement.style = 'background-color: #999999;';
+          if (_this.buttonElement && buttonStatus) {
+            _this.buttonElement.style = 'background-color: #999999;';
+          }
         }
         if (full) _this.sendRpcCommand({ type: _this.RPC_COMMAND.VERSION, payload: { embeddedType: 'full' } });
-        _this.handleUnreadCounter(null);
+        if (_this.buttonElement) {
+          _this.handleUnreadCounter(null);
+        }
         break;
       case _this.RPC_COMMAND.VERSION:
         if (full) _this.sendRpcCommand({ type: _this.RPC_COMMAND.VERSION, payload: { embeddedType: 'full' } });
+        break;
+      case _this.RPC_COMMAND.OPEN_CHAT_BY_USERNAME:
+        _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT_BY_USERNAME, payload: payload });
         break;
       default:
         break;
@@ -119,13 +140,98 @@ function ExpressWidget(params) {
   };
 
   this.handleOpen = function () {
-    _this.isOpen = true;
-    _this.iframeElement.style = '\n      width: 50%;\n      min-width: 600px;\n      height: 50%;\n      min-height: 600px;\n      opacity: 1;\n    ';
+    if(!containerId) {
+      _this.isOpen = true;
+      _this.iframeElement.style = 'width: 50%; min-width: 600px; height: 50%; min-height: 600px; opacity: 1;';
+    }
+  };
+
+  this.handleOpenChat = function (userName) {
+    if(userName) {
+      _this.handleRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT_BY_USERNAME, payload: { userName: userName } });
+    }
   };
 
   this.handleClose = function () {
-    _this.isOpen = false;
-    _this.iframeElement.style = '\n      width: 1px;\n      height: 1px;\n      min-width: 1px;\n      min-height: 1px;\n      opacity: 0;\n    ';
+    if(!containerId) {
+      _this.isOpen = false;
+      _this.iframeElement.style = 'width: 1px; height: 1px; min-width: 1px; min-height: 1px; opacity: 0;';
+    }
+  };
+
+  this.handleOpenApp = function (chatIdApp) {
+    var browser = _this.checkBrowser();
+    var url = chatIdApp ? 'expressapp://chats/' + chatIdApp + '' : 'expressapp://';
+    var success = false;
+
+    function onBlur() {
+      success = true;
+    }
+    if (browser.isFirefox) {
+      _this.handleToggle()
+      if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT, payload: { chatId: chatIdApp } });
+    } else if (browser.isChrome) {
+      const elem = document.body;
+
+      elem.style = 'outline: 0;';
+      elem.setAttribute('tabindex', '1');
+      elem.focus();
+
+      elem.addEventListener("blur", onBlur, true);
+
+      location.href = url;
+
+      setTimeout(function () {
+        elem.removeEventListener('blur', onBlur, true);
+        elem.removeAttribute('tabindex');
+        if (!success) {
+          _this.handleToggle();
+          if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT, payload: { chatId: chatIdApp } });
+        }
+      }, 300);
+    } else if (browser.isIE || browser.isSafari) {
+      var iframe = document.querySelector('#hiddenIframe');
+      if (!iframe) {
+        iframe = document.createElement("iframe");
+        iframe.src = url;
+        iframe.id = "hiddenIframe";
+        iframe.style.display = "none";
+        document.body.appendChild(iframe);
+      }
+
+      iframe.style = 'outline: 0;';
+      iframe.setAttribute('tabindex', '1');
+      iframe.focus();
+
+      iframe.addEventListener("blur", onBlur, true);
+
+      iframe.contentWindow.location.href = url;
+
+      setTimeout(function () {
+        iframe.removeEventListener('blur', onBlur, true);
+        if (!success) {
+          _this.handleToggle();
+          if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT, payload: { chatId: chatIdApp } });
+        }
+      }, 300);
+    } else {
+      _this.handleToggle()
+      if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT, payload: { chatId: chatIdApp } });
+    }
+  };
+
+
+  this.checkBrowser = function() {
+    var isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+    var ua = navigator.userAgent.toLowerCase();
+    return {
+      isOpera   : isOpera,
+      isFirefox : typeof InstallTrigger !== 'undefined',
+      isSafari  : (~ua.indexOf('safari') && !~ua.indexOf('chrome')) || Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0,
+      isIOS     : /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream,
+      isChrome  : !!window.chrome && !isOpera,
+      isIE      : /*@cc_on!@*/false || !!document.documentMode // At least IE6
+    }
   };
 
   this.init();
