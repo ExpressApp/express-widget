@@ -32,12 +32,16 @@ import '@expressms/express-widget/style.css'
 ## Параметры
 * `url` - **обязательно** ссылка на eXpress messenger
 * `elementId` - **опционально** id элемента на странице в который отрисуется кнопка вызова eXpress messenger, если не указать будет отрисовано перед закрывающим тегом `body`
+* `containerId` - **опционально** id элемента на странице в который отрисуется iframe eXpress messenger, если не указать будет отрисовано перед закрывающим тегом `body`
 * `chatId` - **опционально** id чата, будет открыт после разворачивания приложения
+* `buttonStatus` - **опционально** boolean, изменение фона кнопки открытия виджета, в зависимости от входа в приложение
 
 ## Методы
 * `handleOpen` - открывает окно приложения
 * `handleClose` - закрывает окно приложения
 * `handleToggle` - открывает или закрывает окно в зависимости от текущего значения
+* `handleOpenApp` - открывает приложение если оно установлено, если приложения нет - окно приложения, можно указать ид чата
+* `handleOpenChat` - открывает чат найденый по имени пользователя, пример - handleOpenChat('testLogin')
 
 Пример:
 ```html
@@ -49,6 +53,9 @@ import '@expressms/express-widget/style.css'
         <button onclick="expressButton.handleOpen()">Open</button>
         <button onclick="expressButton.handleClose()">Close</button>
         <button onclick="expressButton.handleToggle()">Toggle</button>
+        <button onclick="expressButton.handleOpenApp()">Open app</button>
+        <button onclick="expressButton.handleOpenApp('a1f54e85-ba30-53f4-bd57-39d4c2d643b9')">Open app chat id</button>
+        <button onclick="expressButton.handleOpenChat('testLogin');">Open chat user name (testLogin)</button>
 
         <script src="/index.js"></script>
         <script>
