@@ -147,9 +147,10 @@ function ExpressWidget(params) {
   };
 
   this.handleOpenChat = function (userName) {
-    if(userName) {
-      _this.handleRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT_BY_USERNAME, payload: { userName: userName } });
-    }
+    const [, chatIdApp] = String(userName).match(/([-0-9a-f]{36})/) || [];
+    if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT, payload: { chatId: chatIdApp } });
+    if (userName && !chatIdApp) _this.handleRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT_BY_USERNAME, payload: { userName: userName } });
+    _this.handleOpen();
   };
 
   this.handleClose = function () {
@@ -159,17 +160,21 @@ function ExpressWidget(params) {
     }
   };
 
-  this.handleOpenApp = function (chatIdApp) {
+  this.handleOpenApp = function (data) {
     var browser = _this.checkBrowser();
-    var url = chatIdApp ? 'expressapp://chats/' + chatIdApp + '' : 'expressapp://';
+    var url = 'expressapp://';
+    const [, chatIdApp] = String(data).match(/([-0-9a-f]{36})/) || [];
+    if (chatIdApp) url = 'expressapp://chats/' + chatIdApp;
+    if (data && !chatIdApp) url = 'expressapp://adLogin/' + data;
     var success = false;
 
     function onBlur() {
       success = true;
     }
     if (browser.isFirefox) {
-      _this.handleToggle()
+      _this.handleOpen();
       if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT, payload: { chatId: chatIdApp } });
+      if (data && !chatIdApp) _this.handleOpenChat(data);
     } else if (browser.isChrome) {
       const elem = document.body;
 
@@ -185,8 +190,9 @@ function ExpressWidget(params) {
         elem.removeEventListener('blur', onBlur, true);
         elem.removeAttribute('tabindex');
         if (!success) {
-          _this.handleToggle();
+          _this.handleOpen();
           if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT, payload: { chatId: chatIdApp } });
+          if (data && !chatIdApp) _this.handleOpenChat(data);
         }
       }, 300);
     } else if (browser.isIE || browser.isSafari) {
@@ -210,13 +216,15 @@ function ExpressWidget(params) {
       setTimeout(function () {
         iframe.removeEventListener('blur', onBlur, true);
         if (!success) {
-          _this.handleToggle();
+          _this.handleOpen();
           if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT, payload: { chatId: chatIdApp } });
+          if (data && !chatIdApp) _this.handleOpenChat(data);
         }
       }, 300);
     } else {
-      _this.handleToggle()
+      _this.handleOpen();
       if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT, payload: { chatId: chatIdApp } });
+      if (data && !chatIdApp) _this.handleOpenChat(data);
     }
   };
 
