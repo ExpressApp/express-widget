@@ -20,7 +20,11 @@ function ExpressWidget(params) {
     OPEN_CHAT_BY_USERNAME: 'openChatByUserName',
     VERSION: 'version',
     LOGOUT: 'logout',
-    LOGIN: 'login'
+    OPEN_CHAT_BY_CHAT_ID: 'openChatByChatId',
+    LOGIN: 'login',
+    CALL_USER_BY_USERNAME: 'callUserByUserName',
+    OPEN_CHAT_BY_HUID: 'openChatByHuid',
+    CALL_USER_BY_HUID: 'callUserByHuid'
   };
   this.containerElement = null;
   this.iframeElement = null;
@@ -81,7 +85,7 @@ function ExpressWidget(params) {
           }
         }
         if (full) _this.sendRpcCommand({ type: _this.RPC_COMMAND.VERSION, payload: { embeddedType: 'full', isWidgetGroupCallsEnabled: true } });
-        if (chatId) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT, payload: { chatId: chatId } });
+        if (chatId) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT_BY_CHAT_ID, payload: { chatId: chatId } });
         break;
       case _this.RPC_COMMAND.LOGIN:
         if (!_this.isUser) {
@@ -109,6 +113,15 @@ function ExpressWidget(params) {
         break;
       case _this.RPC_COMMAND.OPEN_CHAT_BY_USERNAME:
         _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT_BY_USERNAME, payload: payload });
+        break;
+      case _this.RPC_COMMAND.CALL_USER_BY_USERNAME:
+        _this.sendRpcCommand({ type: _this.RPC_COMMAND.CALL_USER_BY_USERNAME, payload: payload });
+        break;
+      case _this.RPC_COMMAND.CALL_USER_BY_HUID:
+        _this.sendRpcCommand({ type: _this.RPC_COMMAND.CALL_USER_BY_HUID, payload: payload });
+        break;
+      case _this.RPC_COMMAND.OPEN_CHAT_BY_HUID:
+        _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT_BY_HUID, payload: payload });
         break;
       default:
         break;
@@ -146,10 +159,48 @@ function ExpressWidget(params) {
     }
   };
 
-  this.handleOpenChat = function (userName) {
-    const [, chatIdApp] = String(userName).match(/([-0-9a-f]{36})/) || [];
-    if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT, payload: { chatId: chatIdApp } });
-    if (userName && !chatIdApp) _this.handleRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT_BY_USERNAME, payload: { userName: userName } });
+  this.handleOpenChat = function (params) {
+    if(!params) return
+
+    if(typeof params === 'string') {
+      const [, chatIdApp] = String(params).match(/([-0-9a-f]{36})/) || [];
+      if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT_BY_CHAT_ID, payload: { chatId: chatIdApp } });
+      if (params && !chatIdApp) _this.handleRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT_BY_USERNAME, payload: { userName: params } });
+    }
+
+    if(typeof params === 'object') {
+      switch (true) {
+        case !!params.userName:
+          _this.handleRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT_BY_USERNAME, payload: { userName: params.userName } });
+          break
+        case !!params.userHuid:
+          _this.handleRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT_BY_HUID, payload: { userHuid: params.userHuid } });
+          break
+        case !!params.chatId:
+          _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT_BY_CHAT_ID, payload: { chatId: params.chatId } });
+          break
+        default:
+          break
+      }
+    }
+    _this.handleOpen();
+  };
+
+  this.handleCallUser = function (params) {
+    if(!params) return
+
+    if(typeof params === 'object') {
+      switch (true) {
+        case !!params.userName:
+          _this.handleRpcCommand({ type: _this.RPC_COMMAND.CALL_USER_BY_USERNAME, payload: { userName: params.userName } });
+          break
+        case !!params.userHuid:
+          _this.handleRpcCommand({ type: _this.RPC_COMMAND.CALL_USER_BY_HUID, payload: { userHuid: params.userHuid } });
+          break
+        default:
+          break
+      }
+    }
     _this.handleOpen();
   };
 
@@ -161,11 +212,35 @@ function ExpressWidget(params) {
   };
 
   this.handleOpenApp = function (data) {
+    if(!data) return
+    
     var browser = _this.checkBrowser();
     var url = 'expressapp://';
-    const [, chatIdApp] = String(data).match(/([-0-9a-f]{36})/) || [];
-    if (chatIdApp) url = 'expressapp://chats/' + chatIdApp;
-    if (data && !chatIdApp) url = 'expressapp://adLogin/' + data;
+    var chatIdApp = null
+
+    if(typeof data === 'string') {
+      const [, chatId] = String(data).match(/([-0-9a-f]{36})/) || [];
+      chatIdApp = chatId
+      if (chatIdApp) url = 'expressapp://chats/' + chatIdApp;
+      if (data && !chatIdApp) url = 'expressapp://adLogin/' + data;
+    }
+
+    if(typeof data === 'object') {
+      switch (true) {
+        case !!data.userName:
+          url = 'expressapp://adLogin/' + data.userName + (data.isCall ? '?isCall=true' : '');
+          break
+        case !!data.userHuid:
+          url = 'expressapp://userHuid/' + data.userHuid + (data.isCall ? '?isCall=true' : '');
+          break
+        case !!data.chatId:
+          url = 'expressapp://chats/' + data.chatId + (data.isCall ? '?isCall=true' : '');
+          break
+        default:
+          break
+      }
+    }
+
     var success = false;
 
     function onBlur() {
@@ -173,11 +248,11 @@ function ExpressWidget(params) {
     }
     if (browser.isFirefox) {
       _this.handleOpen();
-      if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT, payload: { chatId: chatIdApp } });
-      if (data && !chatIdApp) _this.handleOpenChat(data);
+      if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT_BY_CHAT_ID, payload: { chatId: chatIdApp } });
+      if (data && !chatIdApp) data.isCall ? _this.handleCallUser(data) : _this.handleOpenChat(data);
     } else if (browser.isChrome) {
       const elem = document.body;
-
+      
       elem.style = 'outline: 0;';
       elem.setAttribute('tabindex', '1');
       elem.focus();
@@ -191,8 +266,8 @@ function ExpressWidget(params) {
         elem.removeAttribute('tabindex');
         if (!success) {
           _this.handleOpen();
-          if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT, payload: { chatId: chatIdApp } });
-          if (data && !chatIdApp) _this.handleOpenChat(data);
+          if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT_BY_CHAT_ID, payload: { chatId: chatIdApp } });
+          if (data && !chatIdApp) data.isCall ? _this.handleCallUser(data) : _this.handleOpenChat(data);
         }
       }, 300);
     } else if (browser.isIE || browser.isSafari) {
@@ -217,14 +292,14 @@ function ExpressWidget(params) {
         iframe.removeEventListener('blur', onBlur, true);
         if (!success) {
           _this.handleOpen();
-          if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT, payload: { chatId: chatIdApp } });
-          if (data && !chatIdApp) _this.handleOpenChat(data);
+          if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT_BY_CHAT_ID, payload: { chatId: chatIdApp } });
+          if (data && !chatIdApp) data.isCall ? _this.handleCallUser(data) : _this.handleOpenChat(data);
         }
       }, 300);
     } else {
       _this.handleOpen();
-      if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT, payload: { chatId: chatIdApp } });
-      if (data && !chatIdApp) _this.handleOpenChat(data);
+      if (chatIdApp) _this.sendRpcCommand({ type: _this.RPC_COMMAND.OPEN_CHAT_BY_CHAT_ID, payload: { chatId: chatIdApp } });
+      if (data && !chatIdApp) data.isCall ? _this.handleCallUser(data) : _this.handleOpenChat(data);
     }
   };
 

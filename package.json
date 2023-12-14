@@ -1,6 +1,6 @@
 {
   "name": "@expressms/express-widget",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Виджет для подключения eXpress messenger",
   "main": "index.js",
   "scripts": {
