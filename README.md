@@ -40,8 +40,9 @@ import '@expressms/express-widget/style.css'
 * `handleOpen` - открывает окно приложения
 * `handleClose` - закрывает окно приложения
 * `handleToggle` - открывает или закрывает окно в зависимости от текущего значения
-* `handleOpenApp` - открывает приложение если оно установлено, если приложения нет - окно приложения, можно указать ид чата или логин пользователя
-* `handleOpenChat` - открывает только окно приложения, можно указать ид чата или логин пользователя
+* `handleOpenApp` - открывает приложение если оно установлено, если приложения нет - окно приложения, можно указать ид чата, логин пользователя или huid
+* `handleOpenChat` - открывает только окно приложения, можно указать ид чата, логин пользователя, huid и isCall - для совершения звонка
+* `handleCallUser` - открывает окно приложения и совершает вызов, можно указать логин пользователя и huid
 
 Пример:
 ```html
@@ -57,10 +58,18 @@ import '@expressms/express-widget/style.css'
         <button onclick="expressButton.handleOpenApp()">Open app desktop</button>
         <button onclick="expressButton.handleOpenApp('a1f54e85-ba30-53f4-bd57-39d4c2d643b9')">Open app chat id desktop</button>
         <button onclick="expressButton.handleOpenApp('testLogin');">Open chat user name (testLogin) desktop</button>
+        <button onclick="expressButton.handleOpenApp({ userHuid: '4015b33e-c7f4-5271-ae50-3b99508cb0d9', isCall: true });">Open chat user huid and call desktop</button>
+        <button onclick="expressButton.handleOpenApp({ userName: 'testLogin@test.test.ru' });">Open chat user name (testLogin) desktop</button>
+        <button onclick="expressButton.handleOpenApp({ chatId: '28f9a9b2-1a1e-5e25-b99c-fcf0e48fb406' });">Open chat id desktop</button>
         
         <button onclick="expressButton.handleOpenChat('a1f54e85-ba30-53f4-bd57-39d4c2d643b9')">Open chat id</button>
         <button onclick="expressButton.handleOpenChat('testLogin');">Open chat user name (testLogin)</button>
-        
+        <button onclick="expressButton.handleOpenChat({ userHuid: '4015b33e-c7f4-5271-ae50-3b99508cb0d9' });">Open chat user huid</button>
+        <button onclick="expressButton.handleOpenChat({ userName: 'testLogin@test.test.ru' });">Open chat user name (testLogin)</button>
+        <button onclick="expressButton.handleOpenChat({ chatId: '28f9a9b2-1a1e-5e25-b99c-fcf0e48fb406' });">Open chat id</button>
+
+        <button onclick="expressButton.handleCallUser({ userHuid: '4015b33e-c7f4-5271-ae50-3b99508cb0d9' });">Open chat user huid and call</button>
+        <button onclick="expressButton.handleCallUser({ userName: 'testLogin@test.test.ru' });">Open chat user name (testLogin) and call</button>
         <script src="/index.js"></script>
         <script>
             const expressButton = new ExpressWidget({
