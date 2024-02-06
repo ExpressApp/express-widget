@@ -24,7 +24,7 @@ import '@expressms/express-widget/style.css'
 <script type="text/javascript">
     new ExpressWidget({
         elementId: 'express-button',
-        url: 'https://web-alpha.ccsteam.ru',
+        url: 'https://corp.express',
     })
 </script>
 ```
@@ -73,7 +73,7 @@ import '@expressms/express-widget/style.css'
         <script src="/index.js"></script>
         <script>
             const expressButton = new ExpressWidget({
-                url: 'https://web-alpha.ccsteam.ru',
+                url: 'https://corp.express',
             })
         </script>
     </body>
